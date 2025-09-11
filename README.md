@@ -35,5 +35,4 @@ An **AI-powered flaky test predictor** that learns from historical test results 
 
 ---
 
-## 📂 Project Structure
 
