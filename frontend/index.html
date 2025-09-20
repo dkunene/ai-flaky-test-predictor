@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Flaky Test Predictor</title>
+  <style>
+    body { font-family: Arial; margin: 40px; }
+    h1 { color: #333; }
+    .container { max-width: 500px; margin: auto; }
+    input, button { display: block; margin: 10px 0; }
+    .result { margin-top: 20px; color: green; }
+    .error { margin-top: 20px; color: red; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI Flaky Test Predictor</h1>
+    
+    <h3>Train Model</h3>
+    <input type="file" id="trainFile">
+    <button onclick="trainModel()">Train</button>
+    <div id="trainResult"></div>
+
+    <h3>Predict</h3>
+    <input type="file" id="predictFile">
+    <button onclick="predictModel()">Predict</button>
+    <div id="predictResult"></div>
+  </div>
+
+  <script>
+    const API_URL = "http://127.0.0.1:8000";
+
+    async function trainModel() {
+      const fileInput = document.getElementById("trainFile");
+      const resultDiv = document.getElementById("trainResult");
+      resultDiv.innerHTML = "";
+
+      if (!fileInput.files.length) { 
+        resultDiv.innerHTML = "Select a file first."; 
+        return; 
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      try {
+        const res = await fetch(`${API_URL}/train`, { method: "POST", body: formData });
+        const data = await res.json();
+        if (data.status === "success") {
+          resultDiv.innerHTML = `<div class="result">${data.message}</div>`;
+        } else {
+          resultDiv.innerHTML = `<div class="error">${data.message}</div>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<div class="error">${err}</div>`;
+      }
+    }
+
+    async function predictModel() {
+      const fileInput = document.getElementById("predictFile");
+      const resultDiv = document.getElementById("predictResult");
+      resultDiv.innerHTML = "";
+
+      if (!fileInput.files.length) { 
+        resultDiv.innerHTML = "Select a file first."; 
+        return; 
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      try {
+        const res = await fetch(`${API_URL}/predict`, { method: "POST", body: formData });
+        const data = await res.json();
+        if (data.status === "success") {
+          // Create a downloadable link for the predictions file
+          const fileName = data.predictions_file.split("/").pop();
+          resultDiv.innerHTML = `<div class="result">
+            Predictions saved! <a href="${API_URL}/${fileName}" target="_blank">Download ${fileName}</a>
+          </div>`;
+        } else {
+          resultDiv.innerHTML = `<div class="error">${data.message}</div>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<div class="error">${err}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
